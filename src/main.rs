@@ -4,13 +4,27 @@ use std::path::Path;
 use std::fs::File;
 use std::io::{prelude::*, BufReader};
 
+enum PivotType {
+    First,
+    Last,
+}
 
-fn quicksort(list : &mut [i32]) -> usize {
-//	println!("\nStarting Sort {:?} len= {}",list,list.len());
-	let mut swap_count = 0;
+fn quicksort(list : &mut [i32],mode : &PivotType) -> usize {
+	let mut comparisons = 0;
 	if list.len() > 1 {
 		let mut i = 0;
-		swap_count = list.len() - 1;
+		comparisons = list.len() - 1;
+
+        match &mode {
+            PivotType::First =>  {}
+            PivotType::Last => {
+                let swap = list[0];
+                list[0] = list[list.len()];
+                list[list.len()] = swap;
+            }
+        }
+
+        
 
 		// pivot is located at list[0]
 		for j in 1..list.len() {
@@ -24,21 +38,16 @@ fn quicksort(list : &mut [i32]) -> usize {
 			}
 		}
 		
-	//	println!("\nAfter partition {:?} left: {} right: {} middle {} median {} count= {}",list,list[0],list[list.len()-1], list[i], "tbd",list.len());
-	//	println!("swapping pivot {} {} at i {} ", list[0],list[i],i);
 		let swap = list[i];
 		list[i] = list[0];
 		list[0] = swap;
-//		println!("\nAfter pivot n{:?} left: {} right: {} middle {} median {} count= {}",list,list[0],list[list.len()-1], list[i], "tbd",list.len());
-//		println!("splitting at {} {} Len {}",i, i+1,list.len());
-		swap_count += quicksort(&mut list[0..i]);
+		comparisons += quicksort(&mut list[0..i],&mode);
 		if i+1 < list.len() {
-			swap_count += quicksort(&mut list[i+1..]);
+			comparisons += quicksort(&mut list[i+1..],&mode);
 		}
 	
 	}
-//	println!("Swap count so far.. {}",swap_count);
-	return swap_count;
+	return comparisons;
 
 }
 
@@ -67,9 +76,9 @@ fn main() {
     let reader = BufReader::new(file);
 	let mut digits = Vec::<i32>::new();
 
-	let mut count = 0;
+	let mut _count = 0;
     for line in reader.lines() {
-		count += 1;	
+		_count += 1;	
 		let x : i32 = line.unwrap().parse::<i32>().unwrap();
 		digits.push(x);
     }
@@ -77,24 +86,24 @@ fn main() {
 
 	let mut digit_copy = vec![0;10];
 	digit_copy[0..10].clone_from_slice(&digits[0..10]);
-	let cnt = quicksort(&mut digit_copy[..]);
+	let cnt = quicksort(&mut digit_copy[..],&PivotType::First);
 	println!("First 10 result is {}",cnt);
 
 	let mut digit_copy = vec![0;100];
 	digit_copy[0..100].clone_from_slice(&digits[0..100]);
-	let cnt = quicksort(&mut digit_copy[..]);
+	let cnt = quicksort(&mut digit_copy[..],&PivotType::First);
 	println!("First 100 result is {}",cnt);
 
 	let mut digit_copy = vec![0;1000];
 	println!("Len dc1 {}", digit_copy.len());
 	digit_copy[0..1000].clone_from_slice(&digits[0..1000]);
-	let cnt = quicksort(&mut digit_copy[..]);
+	let cnt = quicksort(&mut digit_copy[..],&PivotType::First);
 	println!("First 1000 result is {}",cnt);
 
 	let mut digit_copy = vec![0;digits.len()];
 	println!("Len dc1 {}", digit_copy.len());
 	digit_copy[..].clone_from_slice(&digits[..]);
-	let cnt = quicksort(&mut digit_copy[..]);
+	let cnt = quicksort(&mut digit_copy[..],&PivotType::First);
 	println!("Full result is {}",cnt);
 
 	let mut digit_copy = vec![0;digits.len()];
@@ -102,7 +111,7 @@ fn main() {
 	let swap = digit_copy[0];
 	digit_copy[0] = digit_copy[digits.len()-1];
 	digit_copy[digits.len()-1] = swap;
-	let cnt = quicksort(&mut digit_copy[..]);
+	let cnt = quicksort(&mut digit_copy[..],&PivotType::First);
 	println!("Last as pivot result is {}",cnt);
 }
 
@@ -123,17 +132,17 @@ mod tests {
     #[test]
     fn check1() {
 			let mut x = vec!(1,2,3,4);
-			let _cnt = quicksort(&mut x[..]);
+			let _cnt = quicksort(&mut x[..],&PivotType::First);
 			println!("Count is {}", _cnt);
 			assert_eq!(x, vec!(1,2,3,4));
 
 			let mut x = vec!(1,2,4,3);
-			let _cnt = quicksort(&mut x[..]);
+			let _cnt = quicksort(&mut x[..],&PivotType::First);
 			println!("Count is {}", _cnt);
 			assert_eq!(x, vec!(1,2,3,4));
 
 			let mut x = vec!(2, 20, 1, 15, 3, 11, 13, 6, 16, 10, 19, 5, 4, 9, 8, 14, 18, 17, 7, 12);
-			let _cnt = quicksort(&mut x[..]);
+			let _cnt = quicksort(&mut x[..],&PivotType::First);
 			println!("Count is {}", _cnt);
 			assert_eq!(x, (1..=20).collect::<Vec<i32>>());
 			assert_eq!(_cnt, 66);
